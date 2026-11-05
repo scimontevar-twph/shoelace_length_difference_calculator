@@ -167,10 +167,10 @@
         <div class="font-semibold text-slate-300 flex items-center gap-1.5">
           <i class="fa-solid fa-info-circle text-indigo-400"></i> Active Rule Reference:
         </div>
-        <div>&bull; If length information is missing on one side &rarr; <strong class="text-emerald-400 font-semibold">same with color</strong>.</div>
+        <div>&bull; If length information is missing on one side &rarr; <strong class="text-emerald-400 font-semibold">Same size</strong>.</div>
         <div>&bull; Calculation method: <code class="text-indigo-300">|left shoelace length - right shoelace length| / left shoelace length</code>.</div>
-        <div>&bull; Size diff &ge; 10% &rarr; <strong class="text-rose-400 font-semibold">not same: different category</strong>.</div>
-        <div>&bull; Size diff &lt; 10% &rarr; <strong class="text-emerald-400 font-semibold">same with color</strong>.</div>
+        <div>&bull; Size diff &ge; 10% &rarr; <strong class="text-rose-400 font-semibold">Not same size</strong>.</div>
+        <div>&bull; Size diff &lt; 10% &rarr; <strong class="text-emerald-400 font-semibold">Same size</strong>.</div>
         <div>&bull; If multiple values are entered, the calculator automatically selects the <strong>maximum length</strong>.</div>
       </div>
 
@@ -247,18 +247,18 @@
         return;
       }
 
-      // Rule: If length information is missing on one side -> same with color
+      // Rule: If length information is missing on one side -> Same size
       if (leftIsMissing || rightIsMissing || leftVal === null || rightVal === null) {
         verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-emerald-950/40 border border-emerald-500/40';
         verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-emerald-500/20 text-emerald-400';
         verdictIconContainer.innerHTML = '<i class="fa-solid fa-check-circle"></i>';
-        verdictTitle.innerHTML = '<span class="text-emerald-400">same with color</span>';
+        verdictTitle.innerHTML = '<span class="text-emerald-400">Same size</span>';
         verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
         verdictBadge.textContent = 'Missing Info Rule';
 
         metricValues.textContent = `L: ${leftVal ?? 'Missing'} | R: ${rightVal ?? 'Missing'}`;
         metricAbsDiff.textContent = 'N/A';
-        metricPercent.textContent = 'same with color';
+        metricPercent.textContent = 'Same size';
         return;
       }
 
@@ -283,20 +283,20 @@
       metricPercent.textContent = `${percentage.toFixed(2)}%`;
 
       // Rule:
-      // If size diff >= 10% -> not same: different category
-      // If size diff < 10% -> same with color
+      // If size diff >= 10% -> Not same size
+      // If size diff < 10% -> Same size
       if (percentage >= 10 - 1e-9) {
         verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-rose-950/40 border border-rose-500/50';
         verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-rose-500/20 text-rose-400';
         verdictIconContainer.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-        verdictTitle.innerHTML = '<span class="text-rose-400">not same: different category</span>';
+        verdictTitle.innerHTML = '<span class="text-rose-400">Not same size</span>';
         verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30';
         verdictBadge.textContent = `Diff \u2265 10% (${percentage.toFixed(2)}%)`;
       } else {
         verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-emerald-950/40 border border-emerald-500/40';
         verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-emerald-500/20 text-emerald-400';
         verdictIconContainer.innerHTML = '<i class="fa-solid fa-check-circle"></i>';
-        verdictTitle.innerHTML = '<span class="text-emerald-400">same with color</span>';
+        verdictTitle.innerHTML = '<span class="text-emerald-400">Same size</span>';
         verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
         verdictBadge.textContent = `Diff < 10% (${percentage.toFixed(2)}%)`;
       }
