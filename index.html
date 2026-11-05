@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shoelace Length Difference Calculator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for clean UI cues -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <header class="bg-slate-800/80 backdrop-blur border border-slate-700/60 rounded-2xl p-6 shadow-xl text-center md:text-left md:flex md:items-center md:justify-between">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+          <i class="fa-solid fa-ruler-combined"></i> Special Task Rule Engine
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          Shoelace Length Match Calculator
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">
+          Formula: <code class="text-indigo-300 font-mono">|Left - Right| / Left</code> &bull; Multi-size: <span class="text-indigo-300 font-semibold">Uses Max</span> &bull; Threshold: <span class="text-amber-400 font-semibold">10%</span>
+        </p>
+      </div>
+
+      <!-- Quick Preset Actions -->
+      <div class="mt-4 md:mt-0 flex flex-wrap gap-2 justify-center">
+        <button onclick="applyPreset(1)" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition border border-slate-600 shadow-sm">
+          Preset: 8% (Pass)
+        </button>
+        <button onclick="applyPreset(2)" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition border border-slate-600 shadow-sm">
+          Preset: 15% (Fail)
+        </button>
+        <button onclick="applyPreset(3)" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition border border-slate-600 shadow-sm">
+          Preset: Missing Info
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Comparison Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- LEFT SIDE (BASE REFERENCE) -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 text-slate-700/20 text-9xl font-black pointer-events-none select-none">L</div>
+
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-700">
+            <span class="inline-flex items-center gap-2 text-base font-bold text-sky-400 uppercase tracking-wide">
+              <i class="fa-solid fa-left-long"></i> Left Shoelace (Base)
+            </span>
+            <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+              <input type="checkbox" id="leftMissing" onchange="toggleMissing('left')" class="rounded border-slate-600 text-indigo-600 focus:ring-0">
+              Missing length
+            </label>
+          </div>
+
+          <div id="leftInputsWrapper" class="space-y-2">
+            <label for="leftInput" class="text-xs font-semibold text-slate-300 flex justify-between items-center">
+              <span>Shoelace Length(s)</span>
+              <span class="text-[11px] text-slate-400 font-normal">Auto-picks max if multiple</span>
+            </label>
+            <input type="text" id="leftInput" placeholder="e.g. 100 or 90, 120, 100" oninput="calculate()"
+                   class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-base font-medium text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition">
+          </div>
+        </div>
+
+        <!-- Left Resolved Resolution Badge -->
+        <div class="mt-6 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
+          <span class="text-slate-400">Left Length (L):</span>
+          <span id="leftResolvedDisplay" class="font-bold text-white bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">None</span>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 text-slate-700/20 text-9xl font-black pointer-events-none select-none">R</div>
+
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-700">
+            <span class="inline-flex items-center gap-2 text-base font-bold text-purple-400 uppercase tracking-wide">
+              <i class="fa-solid fa-right-long"></i> Right Shoelace
+            </span>
+            <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+              <input type="checkbox" id="rightMissing" onchange="toggleMissing('right')" class="rounded border-slate-600 text-indigo-600 focus:ring-0">
+              Missing length
+            </label>
+          </div>
+
+          <div id="rightInputsWrapper" class="space-y-2">
+            <label for="rightInput" class="text-xs font-semibold text-slate-300 flex justify-between items-center">
+              <span>Shoelace Length(s)</span>
+              <span class="text-[11px] text-slate-400 font-normal">Auto-picks max if multiple</span>
+            </label>
+            <input type="text" id="rightInput" placeholder="e.g. 108 or 100, 105" oninput="calculate()"
+                   class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-base font-medium text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+          </div>
+        </div>
+
+        <!-- Right Resolved Resolution Badge -->
+        <div class="mt-6 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
+          <span class="text-slate-400">Right Length (R):</span>
+          <span id="rightResolvedDisplay" class="font-bold text-white bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">None</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Clear / Reset button -->
+    <div class="flex justify-end">
+      <button onclick="resetCalculator()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1.5">
+        <i class="fa-solid fa-arrow-rotate-left"></i> Reset values
+      </button>
+    </div>
+
+    <!-- RESULT & VERDICT CARD -->
+    <div id="resultCard" class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl transition-all duration-300">
+      
+      <!-- Top Status Banner -->
+      <div id="verdictBanner" class="p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-slate-700/40 border border-slate-600">
+        <div class="flex items-center gap-3">
+          <div id="verdictIconContainer" class="w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-slate-800 text-slate-400">
+            <i class="fa-solid fa-circle-question"></i>
+          </div>
+          <div>
+            <div class="text-xs uppercase font-bold tracking-wider text-slate-400">Rule Verdict</div>
+            <div id="verdictTitle" class="text-xl sm:text-2xl font-black text-white">Enter Values to Evaluate</div>
+          </div>
+        </div>
+        <div id="verdictBadge" class="px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-slate-800 text-slate-300">
+          Waiting for input
+        </div>
+      </div>
+
+      <!-- Calculation Breakdown -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        <!-- Metric 1: Selected Pair -->
+        <div class="bg-slate-900/60 border border-slate-700/60 p-4 rounded-xl">
+          <div class="text-xs text-slate-400 mb-1">Compared Values (L vs R)</div>
+          <div id="metricValues" class="text-lg font-bold text-slate-200">-</div>
+        </div>
+
+        <!-- Metric 2: Absolute Diff -->
+        <div class="bg-slate-900/60 border border-slate-700/60 p-4 rounded-xl">
+          <div class="text-xs text-slate-400 mb-1">Absolute Difference |L - R|</div>
+          <div id="metricAbsDiff" class="text-lg font-bold text-slate-200">-</div>
+        </div>
+
+        <!-- Metric 3: Percentage Ratio -->
+        <div class="bg-slate-900/60 border border-slate-700/60 p-4 rounded-xl">
+          <div class="text-xs text-slate-400 mb-1">Difference Ratio (|L - R| / L)</div>
+          <div id="metricPercent" class="text-lg font-bold text-slate-200">-</div>
+        </div>
+      </div>
+
+      <!-- Logic Formula & Notes -->
+      <div class="mt-5 p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-xs text-slate-400 space-y-1">
+        <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-info-circle text-indigo-400"></i> Active Rule Reference:
+        </div>
+        <div>&bull; If length information is missing on one side &rarr; <strong class="text-emerald-400 font-semibold">same with color</strong>.</div>
+        <div>&bull; Calculation method: <code class="text-indigo-300">|left shoelace length - right shoelace length| / left shoelace length</code>.</div>
+        <div>&bull; Size diff &ge; 10% &rarr; <strong class="text-rose-400 font-semibold">not same: different category</strong>.</div>
+        <div>&bull; Size diff &lt; 10% &rarr; <strong class="text-emerald-400 font-semibold">same with color</strong>.</div>
+        <div>&bull; If multiple values are entered, the calculator automatically selects the <strong>maximum length</strong>.</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Extract numbers from text input and return maximum length
+    function extractMaxLength(text) {
+      if (!text || !text.trim()) return null;
+      // Match integer and floating-point numbers
+      const matches = text.match(/\d+(\.\d+)?/g);
+      if (!matches || matches.length === 0) return null;
+      const nums = matches.map(Number).filter(n => !isNaN(n) && n > 0);
+      return nums.length > 0 ? Math.max(...nums) : null;
+    }
+
+    function toggleMissing(side) {
+      const checkbox = document.getElementById(side + 'Missing');
+      const input = document.getElementById(side + 'Input');
+      if (checkbox.checked) {
+        input.value = '';
+        input.disabled = true;
+        input.classList.add('opacity-40', 'cursor-not-allowed');
+      } else {
+        input.disabled = false;
+        input.classList.remove('opacity-40', 'cursor-not-allowed');
+      }
+      calculate();
+    }
+
+    function calculate() {
+      const leftIsMissing = document.getElementById('leftMissing').checked;
+      const leftText = document.getElementById('leftInput').value;
+
+      const rightIsMissing = document.getElementById('rightMissing').checked;
+      const rightText = document.getElementById('rightInput').value;
+
+      const leftVal = leftIsMissing ? null : extractMaxLength(leftText);
+      const rightVal = rightIsMissing ? null : extractMaxLength(rightText);
+
+      // Display resolved values
+      document.getElementById('leftResolvedDisplay').textContent = 
+        leftIsMissing ? 'Missing' : (leftVal !== null ? `${leftVal} cm/mm` : 'None');
+      
+      document.getElementById('rightResolvedDisplay').textContent = 
+        rightIsMissing ? 'Missing' : (rightVal !== null ? `${rightVal} cm/mm` : 'None');
+
+      const verdictBanner = document.getElementById('verdictBanner');
+      const verdictTitle = document.getElementById('verdictTitle');
+      const verdictBadge = document.getElementById('verdictBadge');
+      const verdictIconContainer = document.getElementById('verdictIconContainer');
+
+      const metricValues = document.getElementById('metricValues');
+      const metricAbsDiff = document.getElementById('metricAbsDiff');
+      const metricPercent = document.getElementById('metricPercent');
+
+      // Check if both sides are empty without explicit missing mark
+      const isCompletelyEmpty = (leftVal === null && !leftIsMissing && !leftText.trim()) &&
+                                (rightVal === null && !rightIsMissing && !rightText.trim());
+
+      if (isCompletelyEmpty) {
+        verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-slate-700/40 border border-slate-600';
+        verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-slate-800 text-slate-400';
+        verdictIconContainer.innerHTML = '<i class="fa-solid fa-circle-question"></i>';
+        verdictTitle.textContent = 'Enter Values to Evaluate';
+        verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-slate-800 text-slate-300';
+        verdictBadge.textContent = 'Waiting for input';
+
+        metricValues.textContent = '-';
+        metricAbsDiff.textContent = '-';
+        metricPercent.textContent = '-';
+        return;
+      }
+
+      // Rule: If length information is missing on one side -> same with color
+      if (leftIsMissing || rightIsMissing || leftVal === null || rightVal === null) {
+        verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-emerald-950/40 border border-emerald-500/40';
+        verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-emerald-500/20 text-emerald-400';
+        verdictIconContainer.innerHTML = '<i class="fa-solid fa-check-circle"></i>';
+        verdictTitle.innerHTML = '<span class="text-emerald-400">same with color</span>';
+        verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        verdictBadge.textContent = 'Missing Info Rule';
+
+        metricValues.textContent = `L: ${leftVal ?? 'Missing'} | R: ${rightVal ?? 'Missing'}`;
+        metricAbsDiff.textContent = 'N/A';
+        metricPercent.textContent = 'same with color';
+        return;
+      }
+
+      const L = leftVal;
+      const R = rightVal;
+
+      if (L <= 0) {
+        verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-amber-950/40 border border-amber-500/40';
+        verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400';
+        verdictIconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        verdictTitle.textContent = 'Left shoelace length must be > 0';
+        verdictBadge.textContent = 'Invalid base';
+        return;
+      }
+
+      const absDiff = Math.abs(L - R);
+      const ratio = absDiff / L;
+      const percentage = ratio * 100;
+
+      metricValues.textContent = `L: ${L} vs R: ${R}`;
+      metricAbsDiff.textContent = `${absDiff.toFixed(2)}`;
+      metricPercent.textContent = `${percentage.toFixed(2)}%`;
+
+      // Rule:
+      // If size diff >= 10% -> not same: different category
+      // If size diff < 10% -> same with color
+      if (percentage >= 10 - 1e-9) {
+        verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-rose-950/40 border border-rose-500/50';
+        verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-rose-500/20 text-rose-400';
+        verdictIconContainer.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+        verdictTitle.innerHTML = '<span class="text-rose-400">not same: different category</span>';
+        verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        verdictBadge.textContent = `Diff \u2265 10% (${percentage.toFixed(2)}%)`;
+      } else {
+        verdictBanner.className = 'p-4 rounded-xl flex items-center justify-between flex-wrap gap-4 bg-emerald-950/40 border border-emerald-500/40';
+        verdictIconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl bg-emerald-500/20 text-emerald-400';
+        verdictIconContainer.innerHTML = '<i class="fa-solid fa-check-circle"></i>';
+        verdictTitle.innerHTML = '<span class="text-emerald-400">same with color</span>';
+        verdictBadge.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        verdictBadge.textContent = `Diff < 10% (${percentage.toFixed(2)}%)`;
+      }
+    }
+
+    function applyPreset(type) {
+      resetInputs();
+      if (type === 1) {
+        // e.g. 100 vs 108 -> 8% (< 10%)
+        document.getElementById('leftInput').value = '100';
+        document.getElementById('rightInput').value = '108';
+      } else if (type === 2) {
+        // e.g. 100 vs 115 -> 15% (>= 10%)
+        document.getElementById('leftInput').value = '100';
+        document.getElementById('rightInput').value = '115';
+      } else if (type === 3) {
+        // Missing length on one side
+        document.getElementById('leftInput').value = '120';
+        document.getElementById('rightMissing').checked = true;
+        toggleMissing('right');
+      }
+      calculate();
+    }
+
+    function resetInputs() {
+      document.getElementById('leftMissing').checked = false;
+      document.getElementById('rightMissing').checked = false;
+      toggleMissing('left');
+      toggleMissing('right');
+      document.getElementById('leftInput').value = '';
+      document.getElementById('rightInput').value = '';
+    }
+
+    function resetCalculator() {
+      resetInputs();
+      calculate();
+    }
+
+    window.onload = function() {
+      calculate();
+    };
+  </script>
+</body>
+</html>
